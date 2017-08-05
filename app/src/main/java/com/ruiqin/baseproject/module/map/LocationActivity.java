@@ -46,9 +46,9 @@ public class LocationActivity extends BaseActivity {
      * 定位监听
      */
     AMapLocationListener locationListener = new AMapLocationListener() {
-
         @Override
         public void onLocationChanged(AMapLocation aMapLocation) {
+
             if (aMapLocation != null) {
 
             } else {
