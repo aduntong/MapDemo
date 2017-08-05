@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.ruiqin.baseproject">
+          package="com.ruiqin.mapdemo">
 
     <uses-permission android:name="android.permission.CALL_PHONE"/>
     <!-- 请求网络 -->
@@ -14,6 +14,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+        <meta-data
+            android:name="com.amap.api.v2.apikey"
+            android:value="请输入您的用户Key"/>
+
         <activity
             android:name=".module.home.MainActivity"
             android:screenOrientation="portrait">
