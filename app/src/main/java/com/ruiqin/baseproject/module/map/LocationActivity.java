@@ -1,6 +1,12 @@
 package com.ruiqin.baseproject.module.map;
 
+import android.Manifest;
+import android.app.Activity;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.widget.TextView;
 
 import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
@@ -9,9 +15,16 @@ import com.amap.api.location.AMapLocationListener;
 import com.ruiqin.baseproject.R;
 import com.ruiqin.baseproject.base.BaseActivity;
 import com.ruiqin.baseproject.module.view.LoadingDialog;
+import com.ruiqin.baseproject.module.view.PermissionTipDialog;
 import com.ruiqin.baseproject.util.ToastUtils;
 
+import butterknife.BindView;
+import butterknife.OnClick;
+
 public class LocationActivity extends BaseActivity {
+
+    @BindView(R.id.textView)
+    TextView mTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,14 +61,35 @@ public class LocationActivity extends BaseActivity {
     AMapLocationListener locationListener = new AMapLocationListener() {
         @Override
         public void onLocationChanged(AMapLocation aMapLocation) {
-
+            cancelLoadingDialog();
             if (aMapLocation != null) {
-
+                if (aMapLocation.getErrorCode() == 0) {//定位成功
+                    stopLocation();
+                    mTextView.setText(aMapLocation.getLatitude() + ", " + aMapLocation.getLongitude());
+                } else {
+                    int errorCode = aMapLocation.getErrorCode();
+                    if (errorCode == 12 || errorCode == 13) {
+                        showPermission();
+                    } else {
+                        ToastUtils.showShort("定位失败");
+                    }
+                }
             } else {
                 ToastUtils.showShort("设备不支持");
             }
         }
     };
+
+    /**
+     *
+     */
+    private void stopLocation() {
+        if (locationClient != null) {
+            locationClient.stopLocation();
+            locationClient.unRegisterLocationListener(locationListener);
+            locationClient = null;
+        }
+    }
 
     /**
      * 开始定位
@@ -101,4 +135,55 @@ public class LocationActivity extends BaseActivity {
             mLoadingDialog.cancel();
         }
     }
+
+    @OnClick(R.id.button)
+    public void onViewClicked() {
+        checkLocationPermission();
+    }
+
+    private static final int PERMISSION_LOCATION = 1;
+
+    /**
+     * 检查定位权限
+     */
+    private void checkLocationPermission() {
+        if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions((Activity) mContext, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_LOCATION);
+        } else {
+            initLocation();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (permissions.length < 0) {
+            showPermission();
+            return;
+        }
+        switch (requestCode) {
+            case PERMISSION_LOCATION:
+                if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                    showPermission();
+                    return;
+                }
+                initLocation();
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+                break;
+        }
+    }
+
+    PermissionTipDialog permissionTipDialog;
+
+    /**
+     * 展示权限
+     */
+    private void showPermission() {
+        if (permissionTipDialog == null) {
+            permissionTipDialog = new PermissionTipDialog(mContext);
+        }
+        permissionTipDialog.show();
+    }
+
 }
