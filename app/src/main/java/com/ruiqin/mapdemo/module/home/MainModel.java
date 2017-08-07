@@ -1,6 +1,7 @@
 package com.ruiqin.mapdemo.module.home;
 
 import com.ruiqin.mapdemo.module.home.bean.MainRecyclerData;
+import com.ruiqin.mapdemo.module.map.LocationActivity;
 import com.ruiqin.mapdemo.module.map.MapDistanceActivity;
 
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ public class MainModel implements MainContract.Model {
     public List<MainRecyclerData> initData() {
         List<MainRecyclerData> recyclerDataList = new ArrayList<>();
         recyclerDataList.add(new MainRecyclerData("MapDistanceActivity", MapDistanceActivity.class));
+        recyclerDataList.add(new MainRecyclerData("LocationActivity", LocationActivity.class));
         return recyclerDataList;
     }
 }

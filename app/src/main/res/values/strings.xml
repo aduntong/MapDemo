@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">经纬度计算</string>
+    <string name="app_name">地图Demo</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

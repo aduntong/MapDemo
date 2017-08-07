@@ -1,6 +1,13 @@
 package com.ruiqin.mapdemo.module.map;
 
+import android.Manifest;
+import android.app.Activity;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.widget.TextView;
 
 import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
@@ -9,16 +16,52 @@ import com.amap.api.location.AMapLocationListener;
 import com.ruiqin.mapdemo.R;
 import com.ruiqin.mapdemo.base.BaseActivity;
 import com.ruiqin.mapdemo.module.view.LoadingDialog;
+import com.ruiqin.mapdemo.module.view.PermissionTipDialog;
 import com.ruiqin.mapdemo.util.ToastUtils;
 
+import butterknife.BindView;
+import butterknife.OnClick;
+
 public class LocationActivity extends BaseActivity {
+
+    @BindView(R.id.textView)
+    TextView mTvMessage;
+
+    private static final int PERMISSION_LOCATION = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_location);
+    }
 
+    /**
+     * 检查权限
+     */
+    private void checkPermission() {
+        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions((Activity) mContext, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_LOCATION);
+        } else {
+            initLocation();
+        }
+    }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (grantResults == null || grantResults.length == 0) {
+            showPermission();
+            return;
+        }
+        switch (requestCode) {
+            case PERMISSION_LOCATION:
+                if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                    showPermission();
+                    return;
+                }
+                initLocation();
+                break;
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override
@@ -50,9 +93,18 @@ public class LocationActivity extends BaseActivity {
     AMapLocationListener locationListener = new AMapLocationListener() {
         @Override
         public void onLocationChanged(AMapLocation aMapLocation) {
-
+            cancelLoadingDialog();
             if (aMapLocation != null) {
-
+                int errorCode = aMapLocation.getErrorCode();
+                if (errorCode == 0) {//定位成功
+                    mTvMessage.setText(aMapLocation.getLatitude() + ", " + aMapLocation.getLongitude());
+                } else {//定位失败
+                    if (errorCode == 12 || errorCode == 13) {
+                        showPermission();
+                    } else {
+                        ToastUtils.showShort("定位失败, 错误码：" + errorCode);
+                    }
+                }
             } else {
                 ToastUtils.showShort("设备不支持");
             }
@@ -98,9 +150,31 @@ public class LocationActivity extends BaseActivity {
         mLoadingDialog.show();
     }
 
+
     private void cancelLoadingDialog() {
         if (!isDestroy && mLoadingDialog != null) {
             mLoadingDialog.cancel();
         }
     }
+
+    PermissionTipDialog mPermissionTipDialog;
+
+    private void showPermission() {
+        if (mPermissionTipDialog == null) {
+            mPermissionTipDialog = new PermissionTipDialog(mContext);
+        }
+        mPermissionTipDialog.show();
+    }
+
+    private void cancelPermission() {
+        if (mPermissionTipDialog != null) {
+            mPermissionTipDialog.cancel();
+        }
+    }
+
+    @OnClick(R.id.button)
+    public void onClickButton() {
+        checkPermission();
+    }
+
 }
