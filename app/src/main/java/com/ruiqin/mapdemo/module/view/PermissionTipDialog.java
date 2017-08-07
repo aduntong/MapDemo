@@ -57,7 +57,7 @@ public class PermissionTipDialog extends Dialog {
      */
     public void setMesage(String message) {
         if (mTvMessage != null) {
-            mTvMessage.setText("请您授予" + message + "权限，授权后审核速度更快哦！您可在“应用信息>权限”中打开权限");
+            mTvMessage.setText("请您授予" + message + "权限，您可在“应用信息>权限”中打开权限");
         }
     }
 
